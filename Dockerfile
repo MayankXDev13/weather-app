@@ -1,3 +1,4 @@
+# ---- Build Stage ----
 FROM node:22.19.0-alpine AS builder
 
 RUN npm install -g pnpm@latest-10
@@ -5,27 +6,20 @@ RUN npm install -g pnpm@latest-10
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-
 RUN pnpm build
 
+# ---- Production Stage ----
+FROM nginx:alpine AS runner
 
-FROM node:22.19.0-alpine AS runner
+# Copy built files to nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-RUN npm install -g pnpm@latest-10
+# Remove default nginx config and use simple config if needed
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-WORKDIR /app
+EXPOSE 80
 
-# Copy built app and package.json
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
-
-# Install vite even if it's a devDependency
-RUN pnpm add -D vite
-
-EXPOSE 4173
-
-CMD ["pnpm", "vite", "preview", "--host", "0.0.0.0"]
+CMD ["nginx", "-g", "daemon off;"]

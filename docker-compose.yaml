@@ -5,4 +5,4 @@ services:
     image: weather-app
     container_name: weather-app-container
     ports:
-      - "4173:4173"  
+      - "80:80"  
