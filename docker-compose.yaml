@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  weather-app:
+    image: weather-app
+    container_name: weather-app-container
+    ports:
+      - "4173:4173"  
